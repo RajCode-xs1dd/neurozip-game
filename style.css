@@ -385,6 +385,6 @@ WIN PARTICLE EFFECT
   to { text-shadow: 0 0 15px #00e6ff; }
 }
 
-.cell {
+#grid, .cell {
   touch-action: none; /* 🔥 important */
 }

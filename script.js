@@ -436,27 +436,6 @@ function createGrid() {
       cell.addEventListener("mouseenter", (e) => {
         if (isMouseDown) dragOver(e);
       });
-
-      // TOUCH (mobile 🔥)
-      cell.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        isMouseDown = true;
-        startDrag(e.touches[0]);
-      }, { passive: false });
-
-      cell.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-
-        const touch = e.touches[0];
-        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-
-        if (element && element.classList.contains("cell")) {
-          dragOver({
-            target: element
-          });
-        }
-
-      }, { passive: false });
       cell.addEventListener("click", handleBacktrack);
 
       gridEl.appendChild(cell);
@@ -479,27 +458,34 @@ document.addEventListener("touchstart", (e) => {
   if (!element || !element.classList.contains("cell")) return;
 
   isMouseDown = true;
-  startDrag({ target: element });
-});
+
+  startDrag({
+    target: element
+  });
+
+}, { passive: false });
+
 
 document.addEventListener("touchmove", (e) => {
   if (!isMouseDown || gameOver) return;
+
+  e.preventDefault(); // 🔥 VERY IMPORTANT
 
   const touch = e.touches[0];
   const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
   if (!element || !element.classList.contains("cell")) return;
 
-  dragOver({ target: element });
-});
+  dragOver({
+    target: element
+  });
+
+}, { passive: false });
+
 
 document.addEventListener("touchend", () => {
   isMouseDown = false;
 });
-
-document.body.addEventListener("touchmove", function (e) {
-  if (isMouseDown) e.preventDefault();
-}, { passive: false });
 
 /* ================================
 WALL CHECK
