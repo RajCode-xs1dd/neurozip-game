@@ -1,68 +1,94 @@
 <!DOCTYPE html>
-
 <html lang="en">
+
 <head>
+
+  <!-- BASIC -->
   <meta charset="UTF-8">
-  <title>Zip Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroZip - Smart Puzzle Game</title>
+
+  <!-- MOBILE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- SEO -->
+  <meta name="description"
+    content="NeuroZip is a smart number connection puzzle game. Connect numbers, fill the grid, and challenge your brain.">
+  <meta name="keywords" content="puzzle game, number game, brain game, logic game, path puzzle">
+  <meta name="author" content="Rajesh Patra">
+
+  <!-- THEME COLOR -->
+  <meta name="theme-color" content="#0f2027">
+
+  <!-- OPEN GRAPH -->
+  <meta property="og:title" content="NeuroZip - Puzzle Game">
+  <meta property="og:description" content="Connect numbers, fill the grid, and solve smart puzzles.">
+  <meta property="og:type" content="website">
+
+  <!-- FAVICON (you can replace later) -->
+  <link rel="icon" href="favicon.ico">
+
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
   <div class="container">
 
-<!-- HEADER -->
-<div class="header">
-  <h1 id="gameTitle">Zip</h1>
-  <button class="info-btn" onclick="openInfo()">ℹ️</button>
-</div>
+    <!-- HEADER -->
+    <div class="header">
+      <!-- UPDATED TITLE (dynamic still works) -->
+      <h1 id="gameTitle">NeuroZip</h1>
 
-<!-- TIMER -->
-<div id="timer" class="timer">⏱ 0s</div>
+      <button class="info-btn" onclick="openInfo()">ℹ️</button>
+    </div>
 
-<!-- GRID + CANVAS -->
-<div id="grid-wrapper">
-  <canvas id="pathCanvas"></canvas>
-  <div id="grid"></div>
-</div>
+    <!-- TIMER -->
+    <div id="timer" class="timer">⏱ 0s</div>
 
-<!-- CONTROLS -->
-<div class="controls">
-  <button class="reset-btn" onclick="resetGame()">Reset</button>
+    <!-- GRID + CANVAS -->
+    <div id="grid-wrapper">
+      <canvas id="pathCanvas"></canvas>
+      <div id="grid"></div>
+    </div>
 
-  <button id="hintBtn" class="hint-btn" onclick="showHint()">
-    <div id="hintFill" class="hint-fill"></div>
-    <span>Hint</span>
-  </button>
-</div>
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="reset-btn" onclick="resetGame()">Reset</button>
 
-<!-- FOOTER -->
-<div class="footer">
-  Made with ❤️ by <span>RajCode</span>
-</div>
+      <button id="hintBtn" class="hint-btn" onclick="showHint()">
+        <div id="hintFill" class="hint-fill"></div>
+        <span>Hint</span>
+      </button>
+    </div>
 
+    <!-- FOOTER -->
+    <div class="footer">
+      Made with ❤️ by <span>RajCode</span>
+    </div>
 
   </div>
 
   <!-- INFO POPUP -->
-
   <div id="infoModal" class="modal">
     <div class="modal-content">
 
+      <!-- CLOSE BUTTON -->
+      <button class="close-btn" onclick="closeInfo()">✖</button>
 
-  <!-- CLOSE BUTTON -->
-  <button class="close-btn" onclick="closeInfo()">✖</button>
+      <!-- SINGLE IMAGE -->
+      <img src="info.png" class="info-img">
 
-  <!-- SINGLE IMAGE -->
-  <img src="info.png" class="info-img">
-
-</div>
-
-
+    </div>
   </div>
 
+  <!-- SCRIPT -->
   <script src="script.js"></script>
 
 </body>
+
 </html>
