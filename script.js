@@ -14,6 +14,7 @@ let hintActive = false;
 let gameOver = false;
 let gamesPlayed = 0;
 let zipNumber = 1;
+let lastTouchCell = null;
 
 // Walls arrays
 let hWalls = [];
@@ -479,18 +480,44 @@ document.addEventListener("touchmove", (e) => {
 
   if (r < 0 || r >= size || c < 0 || c >= size) return;
 
-  const element = document.querySelector(
-    `[data-row='${r}'][data-col='${c}']`
-  );
+  const current = { r, c };
 
-  if (element) {
-    dragOver({ target: element });
+  // 🔥 SAME CELL → ignore
+  if (lastTouchCell && lastTouchCell.r === r && lastTouchCell.c === c) return;
+
+  // 🔥 INTERPOLATION (SMOOTH FILL)
+  if (lastTouchCell) {
+    let dr = r - lastTouchCell.r;
+    let dc = c - lastTouchCell.c;
+
+    let steps = Math.max(Math.abs(dr), Math.abs(dc));
+
+    for (let i = 1; i <= steps; i++) {
+      let nr = lastTouchCell.r + Math.round((dr * i) / steps);
+      let nc = lastTouchCell.c + Math.round((dc * i) / steps);
+
+      const el = document.querySelector(
+        `[data-row='${nr}'][data-col='${nc}']`
+      );
+
+      if (el) {
+        dragOver({ target: el });
+      }
+    }
+  } else {
+    const el = document.querySelector(
+      `[data-row='${r}'][data-col='${c}']`
+    );
+    if (el) dragOver({ target: el });
   }
+
+  lastTouchCell = current;
 
 }, { passive: false });
 
 document.addEventListener("touchend", () => {
   isMouseDown = false;
+  lastTouchCell = null;
 });
 
 document.body.addEventListener("touchmove", function (e) {
@@ -636,6 +663,7 @@ function dragOver(e) {
 }
 
 function addToPath(cell, r, c, value) {
+  if (!cell || !cell.classList.contains("cell")) return;
   const index = path.findIndex(p => p.r === r && p.c === c);
   if (index !== -1) {
     removePathFrom(index);
