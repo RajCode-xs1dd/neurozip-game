@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zip Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1 id="gameTitle">Zip</h1>
+  <button class="info-btn" onclick="openInfo()">ℹ️</button>
+</div>
+
+<!-- TIMER -->
+<div id="timer" class="timer">⏱ 0s</div>
+
+<!-- GRID + CANVAS -->
+<div id="grid-wrapper">
+  <canvas id="pathCanvas"></canvas>
+  <div id="grid"></div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="reset-btn" onclick="resetGame()">Reset</button>
+
+  <button id="hintBtn" class="hint-btn" onclick="showHint()">
+    <div id="hintFill" class="hint-fill"></div>
+    <span>Hint</span>
+  </button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  Made with ❤️ by <span>RajCode</span>
+</div>
+
+
+  </div>
+
+  <!-- INFO POPUP -->
+
+  <div id="infoModal" class="modal">
+    <div class="modal-content">
+
+
+  <!-- CLOSE BUTTON -->
+  <button class="close-btn" onclick="closeInfo()">✖</button>
+
+  <!-- SINGLE IMAGE -->
+  <img src="info.png" class="info-img">
+
+</div>
+
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

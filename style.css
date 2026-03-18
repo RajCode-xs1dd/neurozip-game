@@ -1,0 +1,380 @@
+/* ===== GLOBAL ===== */
+body {
+margin: 0;
+font-family: 'Segoe UI', sans-serif;
+background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+
+/* 🔥 ADDED */
+overflow: hidden;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+background: rgba(255,255,255,0.05);
+backdrop-filter: blur(15px);
+padding: 18px;
+border-radius: 20px;
+width: 95%;
+max-width: 380px;
+text-align: center;
+box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+color: white;
+
+/* 🔥 ADDED */
+transition: 0.3s;
+}
+
+/* ===== HEADER ===== */
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.header h1 {
+font-size: 20px;
+margin: 0;
+
+/* 🔥 ADDED */
+color: #00eaff;
+text-shadow: 0 0 8px rgba(0,255,255,0.6);
+}
+
+/* INFO BUTTON */
+.info-btn {
+width: 34px;
+height: 34px;
+border-radius: 50%;
+border: none;
+background: rgba(255,255,255,0.1);
+color: white;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
+
+/* 🔥 ADDED */
+backdrop-filter: blur(6px);
+}
+
+.info-btn:hover {
+background: rgba(255,255,255,0.25);
+
+/* 🔥 ADDED */
+transform: scale(1.1);
+}
+
+/* ===== TIMER ===== */
+.timer {
+margin: 12px 0;
+font-weight: bold;
+font-size: 14px;
+opacity: 0.9;
+
+/* 🔥 ADDED */
+color: #00f0ff;
+text-shadow: 0 0 6px #00f0ff;
+}
+
+/* ===== GRID WRAPPER ===== */
+#grid-wrapper {
+position: relative;
+
+/* 🔥 ADDED */
+aspect-ratio: 1 / 1;
+}
+
+/* ===== CANVAS ===== */
+#pathCanvas {
+position: absolute;
+top: 0;
+left: 0;
+z-index: 1;
+pointer-events: none;
+
+/* 🔥 ADDED */
+width: 100%;
+height: 100%;
+}
+
+/* ===== GRID ===== */
+#grid {
+position: relative;
+z-index: 2;
+display: grid;
+grid-template-columns: repeat(6, 1fr);
+gap: 8px;
+margin: 20px 0;
+}
+
+/* ===== CELL ===== */
+.cell {
+aspect-ratio: 1;
+background: rgba(255,255,255,0.08);
+border-radius: 14px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: bold;
+cursor: pointer;
+transition: 0.2s;
+
+/* 🔥 ADDED */
+backdrop-filter: blur(4px);
+}
+
+.cell:hover {
+background: rgba(255,255,255,0.15);
+}
+
+/* NUMBER CELLS */
+.cell.number {
+background: black;
+color: white;
+border-radius: 50%;
+box-shadow: 0 0 8px rgba(0,0,0,0.6);
+
+/* 🔥 ADDED */
+box-shadow: 0 0 10px #00f0ff, inset 0 0 5px rgba(0,255,255,0.5);
+animation: glowPulse 2s infinite;
+}
+
+/* PATH CELLS */
+.cell.path {
+background: rgba(0, 200, 255, 0.2);
+
+/* 🔥 ADDED */
+box-shadow: inset 0 0 10px rgba(0,255,255,0.5);
+}
+
+/* HINT CELLS */
+.cell.hint {
+background: orange;
+animation: blink 0.6s infinite alternate;
+}
+
+@keyframes blink {
+from { opacity: 1; }
+to { opacity: 0.4; }
+}
+
+/* ===== CONTROLS ===== */
+.controls {
+display: flex;
+gap: 12px;
+justify-content: center;
+margin-top: 10px;
+}
+
+/* RESET BUTTON */
+.reset-btn {
+padding: 10px 20px;
+border: none;
+border-radius: 12px;
+background: rgba(255,255,255,0.1);
+color: white;
+cursor: pointer;
+transition: 0.3s;
+
+/* 🔥 ADDED */
+backdrop-filter: blur(6px);
+}
+
+.reset-btn:hover {
+background: rgba(255,255,255,0.25);
+
+/* 🔥 ADDED */
+transform: scale(1.05);
+}
+
+/* ===== HINT BUTTON ===== */
+.hint-btn {
+position: relative;
+padding: 10px 40px;
+border: none;
+border-radius: 12px;
+background: rgba(255,255,255,0.1);
+color: white;
+overflow: hidden;
+cursor: pointer;
+transition: 0.3s;
+
+/* 🔥 ADDED */
+backdrop-filter: blur(6px);
+}
+
+.hint-btn:hover {
+transform: scale(1.05);
+}
+
+/* FILL ANIMATION */
+.hint-fill {
+position: absolute;
+left: 0;
+top: 0;
+height: 100%;
+width: 0%;
+background: linear-gradient(90deg, #ff7b00, #ff2e00);
+transition: width 2s linear;
+
+/* 🔥 ADDED */
+opacity: 0.8;
+}
+
+/* TEXT ABOVE */
+.hint-btn span {
+position: relative;
+z-index: 2;
+}
+
+/* DISABLED */
+.hint-btn.disabled {
+opacity: 0.5;
+pointer-events: none;
+}
+
+/* ===== MODAL ===== */
+.modal {
+display: none;
+position: fixed;
+z-index: 999;
+inset: 0;
+background: rgba(0,0,0,0.85);
+justify-content: center;
+align-items: center;
+}
+
+/* MODAL BOX */
+.modal-content {
+position: relative;
+width: 90%;
+max-width: 360px;
+border-radius: 16px;
+overflow: hidden;
+
+/* 🔥 ADDED */
+box-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+
+/* IMAGE */
+.info-img {
+width: 100%;
+display: block;
+border-radius: 12px;
+}
+
+/* CLOSE BUTTON */
+.close-btn {
+position: absolute;
+top: 8px;
+right: 8px;
+background: rgba(0,0,0,0.6);
+color: white;
+border: none;
+font-size: 14px;
+border-radius: 50%;
+width: 28px;
+height: 28px;
+cursor: pointer;
+}
+
+.close-btn:hover {
+background: rgba(255,255,255,0.2);
+}
+
+/* ===== ANIMATION (NEW) ===== */
+@keyframes glowPulse {
+0% { box-shadow: 0 0 5px #00f0ff; }
+50% { box-shadow: 0 0 20px #00f0ff; }
+100% { box-shadow: 0 0 5px #00f0ff; }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 400px) {
+.container {
+padding: 12px;
+}
+
+.header h1 {
+font-size: 18px;
+}
+}
+
+/* ================================
+DIFFICULTY COLORS (GRID GLOW)
+================================ */
+
+.container.easy {
+  box-shadow: 0 0 25px rgba(0,255,100,0.4);
+}
+
+.container.easy-plus {
+  box-shadow: 0 0 25px rgba(0,255,255,0.4);
+}
+
+.container.moderate {
+  box-shadow: 0 0 25px rgba(255,255,0,0.4);
+}
+
+.container.moderate-plus {
+  box-shadow: 0 0 25px rgba(255,140,0,0.5);
+}
+
+.container.hard {
+  box-shadow: 0 0 25px rgba(255,0,0,0.5);
+}
+
+.container.hard-plus {
+  box-shadow: 0 0 25px rgba(180,0,255,0.5);
+}
+
+/* ================================
+WIN PARTICLE EFFECT
+================================ */
+
+#winCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* GLOW FLASH */
+.win-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.6), transparent);
+  opacity: 0;
+  z-index: 9998;
+  animation: flash 0.8s ease;
+}
+
+@keyframes flash {
+  0% { opacity: 0; }
+  40% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  margin-top: 12px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.footer span {
+  font-weight: 600;
+  color: #00e6ff;
+ animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 5px #00e6ff; }
+  to { text-shadow: 0 0 15px #00e6ff; }
+}
