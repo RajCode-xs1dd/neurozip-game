@@ -88,6 +88,7 @@ text-shadow: 0 0 6px #00f0ff;
 /* ===== GRID WRAPPER ===== */
 #grid-wrapper {
 position: relative;
+touch-action: none; /* 🔥 important */
 
 /* 🔥 ADDED */
 aspect-ratio: 1 / 1;
@@ -112,21 +113,22 @@ position: relative;
 z-index: 2;
 display: grid;
 grid-template-columns: repeat(6, 1fr);
-gap: 8px;
-margin: 20px 0;
+gap: 3px;
+margin: 16px 0;
 }
 
 /* ===== CELL ===== */
 .cell {
 aspect-ratio: 1;
 background: rgba(255,255,255,0.08);
-border-radius: 14px;
+border-radius: 10px;
 display: flex;
 align-items: center;
 justify-content: center;
 font-weight: bold;
 cursor: pointer;
 transition: 0.2s;
+padding: 2px;
 
 /* 🔥 ADDED */
 backdrop-filter: blur(4px);

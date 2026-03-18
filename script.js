@@ -427,13 +427,11 @@ function createGrid() {
         cell.classList.add("number");
       }
 
-      // MOUSE (desktop)
       cell.addEventListener("mousedown", (e) => {
         isMouseDown = true;
         startDrag(e);
       });
-
-      cell.addEventListener("mouseenter", (e) => {
+      cell.addEventListener("mouseover", (e) => {
         if (isMouseDown) dragOver(e);
       });
       cell.addEventListener("click", handleBacktrack);
@@ -458,34 +456,46 @@ document.addEventListener("touchstart", (e) => {
   if (!element || !element.classList.contains("cell")) return;
 
   isMouseDown = true;
-
-  startDrag({
-    target: element
-  });
-
-}, { passive: false });
-
+  startDrag({ target: element });
+});
 
 document.addEventListener("touchmove", (e) => {
   if (!isMouseDown || gameOver) return;
 
-  e.preventDefault(); // 🔥 VERY IMPORTANT
+  e.preventDefault();
 
   const touch = e.touches[0];
-  const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
-  if (!element || !element.classList.contains("cell")) return;
+  const grid = document.getElementById("grid");
+  const rect = grid.getBoundingClientRect();
 
-  dragOver({
-    target: element
-  });
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+
+  const cellSize = rect.width / size;
+
+  const c = Math.floor(x / cellSize);
+  const r = Math.floor(y / cellSize);
+
+  if (r < 0 || r >= size || c < 0 || c >= size) return;
+
+  const element = document.querySelector(
+    `[data-row='${r}'][data-col='${c}']`
+  );
+
+  if (element) {
+    dragOver({ target: element });
+  }
 
 }, { passive: false });
-
 
 document.addEventListener("touchend", () => {
   isMouseDown = false;
 });
+
+document.body.addEventListener("touchmove", function (e) {
+  if (isMouseDown) e.preventDefault();
+}, { passive: false });
 
 /* ================================
 WALL CHECK
