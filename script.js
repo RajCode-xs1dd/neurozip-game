@@ -427,13 +427,36 @@ function createGrid() {
         cell.classList.add("number");
       }
 
+      // MOUSE (desktop)
       cell.addEventListener("mousedown", (e) => {
         isMouseDown = true;
         startDrag(e);
       });
-      cell.addEventListener("mouseover", (e) => {
+
+      cell.addEventListener("mouseenter", (e) => {
         if (isMouseDown) dragOver(e);
       });
+
+      // TOUCH (mobile 🔥)
+      cell.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        isMouseDown = true;
+        startDrag(e.touches[0]);
+      }, { passive: false });
+
+      cell.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (element && element.classList.contains("cell")) {
+          dragOver({
+            target: element
+          });
+        }
+
+      }, { passive: false });
       cell.addEventListener("click", handleBacktrack);
 
       gridEl.appendChild(cell);
@@ -826,9 +849,9 @@ function checkWin() {
   playWinAnimation();
 
   setTimeout(() => {
-    alert("🎉 Completed! Time: " + 
-      (timer < 60 
-        ? timer + "s" 
+    alert("🎉 Completed! Time: " +
+      (timer < 60
+        ? timer + "s"
         : Math.floor(timer / 60) + ":" + (timer % 60).toString().padStart(2, '0'))
     );
 
