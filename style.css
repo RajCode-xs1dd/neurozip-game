@@ -6,9 +6,8 @@ background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
 display: flex;
 justify-content: center;
 min-height: 100vh;
-align-items: flex-start;
-padding-top: 20px;
-padding-bottom: 20px;
+align-items: center;
+padding: 10px;
 
 /* 🔥 ADDED */
 overflow: hidden;
@@ -21,7 +20,7 @@ overflow: hidden;
   padding: 14px; /* 🔥 reduced */
   border-radius: 18px;
 
-  width: 92%;
+  width: 95%;
   max-width: 360px;
 
   text-align: center;
@@ -31,7 +30,7 @@ overflow: hidden;
   margin: auto;
 
 /* 🔥 ADDED */
-transition: 0.3s;
+transition: all 0.3s ease;
 }
 
 /* ===== HEADER ===== */
