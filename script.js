@@ -448,44 +448,45 @@ document.addEventListener("mouseup", () => {
   isMouseDown = false;
 });
 
+function getCellFromTouch(x, y) {
+  const el = document.elementFromPoint(x, y);
+  if (!el || !el.classList.contains("cell")) return null;
+
+  return {
+    el,
+    r: +el.dataset.row,
+    c: +el.dataset.col
+  };
+}
+
 document.addEventListener("touchstart", (e) => {
   if (gameOver) return;
 
-  const touch = e.touches[0];
-  const element = document.elementFromPoint(touch.clientX, touch.clientY);
-
-  if (!element || !element.classList.contains("cell")) return;
+  const t = e.touches[0];
+  const cell = getCellFromTouch(t.clientX, t.clientY);
+  if (!cell) return;
 
   isMouseDown = true;
-  startDrag({ target: element });
-});
+  lastTouchCell = { r: cell.r, c: cell.c };
+
+  startDrag({ target: cell.el });
+
+}, { passive: false });
 
 document.addEventListener("touchmove", (e) => {
   if (!isMouseDown || gameOver) return;
 
   e.preventDefault();
 
-  const touch = e.touches[0];
+  const t = e.touches[0];
+  const cell = getCellFromTouch(t.clientX, t.clientY);
+  if (!cell) return;
 
-  const grid = document.getElementById("grid");
-  const rect = grid.getBoundingClientRect();
+  const { r, c, el } = cell;
 
-  const x = touch.clientX - rect.left;
-  const y = touch.clientY - rect.top;
-
-  const cellSize = rect.width / size;
-
-  const c = Math.floor(x / cellSize);
-  const r = Math.floor(y / cellSize);
-
-  if (r < 0 || r >= size || c < 0 || c >= size) return;
-
-  const current = { r, c };
-
-  // 🔥 SAME CELL → ignore
   if (lastTouchCell && lastTouchCell.r === r && lastTouchCell.c === c) return;
 
-  // 🔥 INTERPOLATION (SMOOTH FILL)
+  // 🔥 interpolate smoothly
   if (lastTouchCell) {
     let dr = r - lastTouchCell.r;
     let dc = c - lastTouchCell.c;
@@ -496,22 +497,17 @@ document.addEventListener("touchmove", (e) => {
       let nr = lastTouchCell.r + Math.round((dr * i) / steps);
       let nc = lastTouchCell.c + Math.round((dc * i) / steps);
 
-      const el = document.querySelector(
+      const midEl = document.querySelector(
         `[data-row='${nr}'][data-col='${nc}']`
       );
 
-      if (el) {
-        dragOver({ target: el });
-      }
+      if (midEl) dragOver({ target: midEl });
     }
   } else {
-    const el = document.querySelector(
-      `[data-row='${r}'][data-col='${c}']`
-    );
-    if (el) dragOver({ target: el });
+    dragOver({ target: el });
   }
 
-  lastTouchCell = current;
+  lastTouchCell = { r, c };
 
 }, { passive: false });
 
@@ -519,10 +515,6 @@ document.addEventListener("touchend", () => {
   isMouseDown = false;
   lastTouchCell = null;
 });
-
-document.body.addEventListener("touchmove", function (e) {
-  if (isMouseDown) e.preventDefault();
-}, { passive: false });
 
 /* ================================
 WALL CHECK
@@ -571,26 +563,23 @@ function drawPath() {
   ctx.save();
 
   ctx.strokeStyle = "#00f0ff";
-  ctx.lineWidth = 30;
+  ctx.lineWidth = 20;
   ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+  ctx.lineJoin = "miter";
   ctx.shadowColor = "#00f0ff";
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 8;
 
   ctx.beginPath();
 
-  let start = getCellCenter(path[0].r, path[0].c);
-  ctx.moveTo(start.x, start.y);
+let start = getCellCenter(path[0].r, path[0].c);
+ctx.moveTo(start.x, start.y);
 
-  for (let i = 1; i < path.length - 1; i++) {
-    let p1 = getCellCenter(path[i].r, path[i].c);
-    let p2 = getCellCenter(path[i + 1].r, path[i + 1].c);
+for (let i = 1; i < path.length; i++) {
+  let p = getCellCenter(path[i].r, path[i].c);
+  ctx.lineTo(p.x, p.y); // 🔥 straight lines = no lag
+}
 
-    let midX = (p1.x + p2.x) / 2;
-    let midY = (p1.y + p2.y) / 2;
-
-    ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
-  }
+ctx.stroke();
 
   let last = getCellCenter(path[path.length - 1].r, path[path.length - 1].c);
   ctx.lineTo(last.x, last.y);
@@ -904,12 +893,12 @@ function playWinAnimation() {
 
   let particles = [];
 
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 30; i++) {
     particles.push({
       x: canvas.width / 2,
       y: canvas.height / 2,
-      vx: (Math.random() - 0.5) * 10,
-      vy: (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 5,
+      vy: (Math.random() - 0.5) * 5,
       size: Math.random() * 4 + 2,
       life: 100
     });
