@@ -803,7 +803,7 @@ function showHint() {
     let elapsed = Date.now() - startTime;
     let percent = Math.min(elapsed / duration, 1);
 
-    fill.style.width = (percent * 100) + "%";
+    fill.style.width = (percent * 100,100) + "%";
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
@@ -812,9 +812,9 @@ function showHint() {
     if (Math.floor(elapsed / 250) % 2 === 0) {
       ctx.save();
       ctx.strokeStyle = "rgba(255,255,0,0.95)";
-      ctx.lineWidth = 24;
+      ctx.lineWidth = 20;
       ctx.shadowColor = "yellow";
-      ctx.shadowBlur = 30;
+      ctx.shadowBlur = 20;
       ctx.beginPath();
       let s = getCellCenter(segment[0].r, segment[0].c);
       ctx.moveTo(s.x, s.y);
@@ -923,7 +923,7 @@ function playWinAnimation() {
   const flash = document.createElement("div");
   flash.className = "win-flash";
   document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 800);
+  setTimeout(() => flash.remove(), 500);
 
   // PARTICLES
   let canvas = document.createElement("canvas");
