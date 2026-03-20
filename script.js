@@ -247,74 +247,138 @@ function getMaxNumber(grid) {
 }
 
 /* ================================
-PUZZLE GENERATOR (with exact clue count)
+PATH COMPLEXITY (number of turns)
 ================================ */
 function getPathComplexity(path) {
   let turns = 0;
-
   for (let i = 2; i < path.length; i++) {
     let a = path[i - 2];
     let b = path[i - 1];
     let c = path[i];
-
     let d1 = { r: b.r - a.r, c: b.c - a.c };
     let d2 = { r: c.r - b.r, c: c.c - b.c };
-
     if (d1.r !== d2.r || d1.c !== d2.c) turns++;
   }
-
   return turns;
 }
 
-// Choose clue indices: first, last, and random distinct ones in between
-function pickSpacedIndices(pathLength, count, difficulty) {
+/* ================================
+RANDOM CLUE INDICES (excluding first and last)
+================================ */
+function pickRandomIndices(pathLength, count) {
+  if (count < 2) return [0, pathLength - 1];
   let indices = [0];
-  let last = 0;
-
-  for (let i = 1; i < count - 1; i++) {
-
-    let gap;
-
-    if (difficulty.includes("easy")) gap = 3;
-    else if (difficulty.includes("moderate")) gap = 4;
-    else gap = 5;
-
-    let next = last + gap + Math.floor(Math.random() * 2);
-
-    if (next >= pathLength - 1) break;
-
-    indices.push(next);
-    last = next;
+  let available = [];
+  for (let i = 1; i < pathLength - 1; i++) available.push(i);
+  shuffle(available);
+  for (let i = 0; i < count - 2; i++) {
+    if (i < available.length) indices.push(available[i]);
   }
-
   indices.push(pathLength - 1);
-
+  indices.sort((a, b) => a - b);
   return indices;
 }
 
+/* ================================
+LONG WALL PLACEMENT
+================================ */
+function placeLongWalls(path, size, numLongWalls) {
+  let hWalls = Array(size).fill().map(() => Array(size - 1).fill(false));
+  let vWalls = Array(size).fill().map(() => Array(size - 1).fill(false));
+
+  if (numLongWalls === 0) return { hWalls, vWalls };
+
+  // Record edges used by the solution path
+  let pathEdges = new Set();
+  for (let i = 0; i < path.length - 1; i++) {
+    let { r: r1, c: c1 } = path[i];
+    let { r: r2, c: c2 } = path[i + 1];
+    if (r1 === r2) {
+      let cMin = Math.min(c1, c2);
+      pathEdges.add(`v:${r1}:${cMin}`);
+    } else {
+      let rMin = Math.min(r1, r2);
+      pathEdges.add(`h:${rMin}:${c1}`);
+    }
+  }
+
+  // Helper to check if a horizontal segment is entirely unused
+  function isHorizontalFree(r, cStart, cEnd) {
+    for (let c = cStart; c <= cEnd; c++) {
+      if (pathEdges.has(`h:${r}:${c}`)) return false;
+    }
+    return true;
+  }
+  function isVerticalFree(c, rStart, rEnd) {
+    for (let r = rStart; r <= rEnd; r++) {
+      if (pathEdges.has(`v:${r}:${c}`)) return false;
+    }
+    return true;
+  }
+
+  // Place each long wall
+  for (let w = 0; w < numLongWalls; w++) {
+    let attempts = 0;
+    let placed = false;
+    while (!placed && attempts < 200) {
+      attempts++;
+      // Random direction: 0 = horizontal, 1 = vertical
+      let dir = Math.random() < 0.5 ? 'h' : 'v';
+      if (dir === 'h') {
+        let r = Math.floor(Math.random() * (size - 1));
+        // Random segment length between 2 and 4 (or up to available columns)
+        let maxLen = size;
+        let len = Math.floor(Math.random() * 3) + 2; // 2-4
+        let cStart = Math.floor(Math.random() * (size - len + 1));
+        let cEnd = cStart + len - 1;
+        if (isHorizontalFree(r, cStart, cEnd)) {
+          for (let c = cStart; c <= cEnd; c++) {
+            hWalls[r][c] = true;
+          }
+          placed = true;
+        }
+      } else {
+        let c = Math.floor(Math.random() * (size - 1));
+        let len = Math.floor(Math.random() * 3) + 2;
+        let rStart = Math.floor(Math.random() * (size - len + 1));
+        let rEnd = rStart + len - 1;
+        if (isVerticalFree(c, rStart, rEnd)) {
+          for (let r = rStart; r <= rEnd; r++) {
+            vWalls[r][c] = true;
+          }
+          placed = true;
+        }
+      }
+    }
+    // If not placed after many attempts, skip this wall
+  }
+  return { hWalls, vWalls };
+}
+
+/* ================================
+PUZZLE GENERATOR (with exact clue count and long walls)
+================================ */
 function generateUniquePuzzle(difficulty) {
+  // Difficulty parameters: size, maxNumber (clue count), longWalls, minTurns
   const params = {
-    "easy": { size: 6, maxNumber: 6, walls: 0 },
-    "easy+": { size: 6, maxNumber: 8, walls: 0 },
-    "moderate": { size: 6, maxNumber: 10, walls: 2 },
-    "moderate+": { size: 6, maxNumber: 10, walls: 4 },
-    "hard": { size: 6, maxNumber: 10, walls: 6 },
-    "hard+": { size: 6, maxNumber: 10, walls: 8 }
+    "easy":     { size: 6, maxNumber: 8, longWalls: 0, minTurns: 8 },
+    "easy+":    { size: 6, maxNumber: 7,  longWalls: 1, minTurns: 10 },
+    "moderate": { size: 6, maxNumber: 6,  longWalls: 2, minTurns: 12 },
+    "moderate+":{ size: 6, maxNumber: 5,  longWalls: 3, minTurns: 14 },
+    "hard":     { size: 6, maxNumber: 4,  longWalls: 3, minTurns: 16 },
+    "hard+":    { size: 6, maxNumber: 4,  longWalls: 4, minTurns: 18 }
   };
 
-  let { size, maxNumber, walls } = params[difficulty];
+  let { size, maxNumber, longWalls, minTurns } = params[difficulty];
+
   // Try up to 300 times to generate a unique puzzle
   for (let attempt = 0; attempt < 300; attempt++) {
     const path = generateHamiltonianPath(size);
     let complexity = getPathComplexity(path);
-    if (difficulty.includes("easy") && complexity < 10) continue;
-    if (difficulty.includes("moderate") && complexity < 14) continue;
-    if (difficulty.includes("hard") && complexity < 18) continue;
+    if (complexity < minTurns) continue;
 
-    let indices = pickSpacedIndices(path.length, maxNumber, difficulty);
-    indices.sort((a, b) => a - b);
-
-    if (indices.length < maxNumber) continue; // not enough distinct indices
+    let indices = pickRandomIndices(path.length, maxNumber);
+    if (indices.length < maxNumber) continue;
 
     let grid = Array(size).fill().map(() => Array(size).fill(0));
     for (let i = 0; i < indices.length; i++) {
@@ -324,61 +388,16 @@ function generateUniquePuzzle(difficulty) {
 
     let sol = countSolutions(grid, size);
     if (sol === 1) {
-      // Add walls if hard+
-      let hWalls = Array(size).fill().map(() => Array(size - 1).fill(false));
-      let vWalls = Array(size).fill().map(() => Array(size - 1).fill(false));
-
-      if (walls > 0) {
-        let numWalls = walls;
-
-        let pathEdges = new Set();
-        for (let i = 0; i < path.length - 1; i++) {
-          let { r: r1, c: c1 } = path[i];
-          let { r: r2, c: c2 } = path[i + 1];
-          if (r1 === r2) {
-            let cMin = Math.min(c1, c2);
-            pathEdges.add(`v:${r1}:${cMin}`);
-          } else {
-            let rMin = Math.min(r1, r2);
-            pathEdges.add(`h:${rMin}:${c1}`);
-          }
-        }
-
-        let nonPathEdges = [];
-        for (let r = 0; r < size - 1; r++) {
-          for (let c = 0; c < size; c++) {
-            if (!pathEdges.has(`h:${r}:${c}`)) {
-              nonPathEdges.push({ type: 'h', r, c });
-            }
-          }
-        }
-        for (let r = 0; r < size; r++) {
-          for (let c = 0; c < size - 1; c++) {
-            if (!pathEdges.has(`v:${r}:${c}`)) {
-              nonPathEdges.push({ type: 'v', r, c });
-            }
-          }
-        }
-
-        shuffle(nonPathEdges);
-        let selected = nonPathEdges.slice(0, numWalls);
-        for (let w of selected) {
-          if (w.type === 'h') hWalls[w.r][w.c] = true;
-          else vWalls[w.r][w.c] = true;
-        }
-      }
-
+      // Place long walls
+      let { hWalls, vWalls } = placeLongWalls(path, size, longWalls);
       return { size, grid, solution: path, hWalls, vWalls };
     }
-    if (attempt > 120 && difficulty.includes("hard")) break;
   }
 
-  // Fallback (very rare) – ensure last number is at the last cell
+  // Fallback (very rare)
   console.warn("Using fallback puzzle generation");
   const path = generateHamiltonianPath(size);
   let grid = Array(size).fill().map(() => Array(size).fill(0));
-
-  // Always include first and last indices
   let indices = [0];
   let step = Math.floor((path.length - 1) / (maxNumber - 1));
   for (let i = 1; i < maxNumber - 1; i++) {
@@ -386,12 +405,10 @@ function generateUniquePuzzle(difficulty) {
   }
   indices.push(path.length - 1);
   indices.sort((a, b) => a - b);
-
   for (let i = 0; i < indices.length; i++) {
     let { r, c } = path[indices[i]];
     grid[r][c] = i + 1;
   }
-
   return { size, grid, solution: path, hWalls: [], vWalls: [] };
 }
 
@@ -404,7 +421,7 @@ function getDifficulty() {
   if (gamesPlayed < 10) return "moderate";
   if (gamesPlayed < 15) return "moderate+";
   if (gamesPlayed < 21) return "hard";
-  return "pro";
+  return "hard+";
 }
 
 /* ================================
@@ -414,7 +431,6 @@ function loadNextPuzzle() {
   document.body.style.cursor = 'wait';
 
   setTimeout(() => {
-
     let difficulty = getDifficulty();
     let puzzle = generateUniquePuzzle(difficulty);
 
@@ -438,16 +454,16 @@ function loadNextPuzzle() {
     document.getElementById("gameTitle").textContent =
       `Zip #${zipNumber} - ${difficulty}`;
 
-    // ✅ FIXED: apply difficulty class correctly
+    // Apply difficulty class
     const container = document.querySelector(".container");
     container.className = "container " + difficulty.replace("+", "-plus");
 
     createGrid();
 
     document.body.style.cursor = 'default';
-
   }, 0);
 }
+
 /* ================================
 GRID
 ================================ */
@@ -537,7 +553,7 @@ document.addEventListener("touchmove", (e) => {
 
       if (lastTouchCell && lastTouchCell.r === r && lastTouchCell.c === c) return;
 
-      // 🔥 interpolation (smooth)
+      // interpolation (smooth)
       if (lastTouchCell) {
         let dr = r - lastTouchCell.r;
         let dc = c - lastTouchCell.c;
@@ -629,7 +645,7 @@ function drawPath() {
 
   for (let i = 1; i < path.length; i++) {
     let p = getCellCenter(path[i].r, path[i].c);
-    ctx.lineTo(p.x, p.y); // 🔥 straight lines = no lag
+    ctx.lineTo(p.x, p.y);
   }
 
   ctx.stroke();
@@ -641,10 +657,11 @@ function drawWalls() {
   const cellW = canvas.width / size;
   const cellH = canvas.height / size;
   ctx.save();
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#222"; // dark, thick walls
+  ctx.lineWidth = 12;       // thicker to look like barriers
   ctx.shadowBlur = 0;
 
+  // Horizontal walls (between rows)
   for (let r = 0; r < size - 1; r++) {
     for (let c = 0; c < size; c++) {
       if (hWalls[r] && hWalls[r][c]) {
@@ -655,6 +672,7 @@ function drawWalls() {
       }
     }
   }
+  // Vertical walls (between columns)
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size - 1; c++) {
       if (vWalls[r] && vWalls[r][c]) {
@@ -701,21 +719,24 @@ function dragOver(e) {
 
 function addToPath(cell, r, c, value) {
   if (!cell || !cell.classList.contains("cell")) return;
+
+  // 🚫 Prevent stepping on the last number too early
+  const maxNum = getMaxNumber(gridData);
+  if (value === maxNum && path.length !== size * size - 1) return;
+
   const index = path.findIndex(p => p.r === r && p.c === c);
   if (index !== -1) {
-
-    // ✅ only allow backtrack if it's the previous cell
+    // only allow backtrack if it's the previous cell
     if (index === path.length - 2) {
       removePathFrom(index);
     }
-
     return;
   }
 
   if (path.length > 0) {
     const last = path[path.length - 1];
     if (Math.abs(last.r - r) + Math.abs(last.c - c) !== 1) return;
-    if (hasWall(last.r, last.c, r, c)) return;
+    if (hasWall(last.r, last.c, r, c)) return; // wall blocks movement
   }
 
   // Allow any blank cell, but numbered cells must be in order
@@ -782,7 +803,7 @@ function showHint() {
     let elapsed = Date.now() - startTime;
     let percent = Math.min(elapsed / duration, 1);
 
-    fill.style.width = (percent * 100, 100) + "%";
+    fill.style.width = (percent * 100) + "%";
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
@@ -807,7 +828,6 @@ function showHint() {
       if (segment.length >= 2) {
         let last = segment[segment.length - 1];
         let prev = segment[segment.length - 2];
-        // Direction from prev to last
         let dx = last.c - prev.c;
         let dy = last.r - prev.r;
 
@@ -830,7 +850,6 @@ function showHint() {
         ctx.lineTo(-15, 8);
         ctx.closePath();
         ctx.fill();
-        // Optional outline for visibility
         ctx.strokeStyle = "orange";
         ctx.lineWidth = 2;
         ctx.shadowBlur = 0;
@@ -890,48 +909,20 @@ function resetGame() {
 }
 
 /* ================================
-WIN
+WIN ANIMATION (with cleanup)
 ================================ */
-function checkWin() {
-
-  // must fill all cells
-  if (path.length !== size * size) return;
-
-  // must reach last number
-  const maxNumber = getMaxNumber(gridData);
-  if (currentNumber !== maxNumber + 1) return;
-
-  // prevent multiple triggers
-  if (gameOver) return;
-
-  // ✅ REAL WIN
-  gameOver = true;
-  clearInterval(interval);
-
-  gamesPlayed++;
-  zipNumber++;
-
-  // 🔥 animation only here
-  playWinAnimation();
-
-  setTimeout(() => {
-    alert("🎉 Completed! Time: " +
-      (timer < 60
-        ? timer + "s"
-        : Math.floor(timer / 60) + ":" + (timer % 60).toString().padStart(2, '0'))
-    );
-
-    loadNextPuzzle();
-  }, 500);
-}
+let winAnimationFrame = null;
 
 function playWinAnimation() {
+  // Remove any existing win canvas
+  const existing = document.getElementById("winCanvas");
+  if (existing) existing.remove();
+  if (winAnimationFrame) cancelAnimationFrame(winAnimationFrame);
 
   // FLASH
   const flash = document.createElement("div");
   flash.className = "win-flash";
   document.body.appendChild(flash);
-
   setTimeout(() => flash.remove(), 800);
 
   // PARTICLES
@@ -940,7 +931,6 @@ function playWinAnimation() {
   document.body.appendChild(canvas);
 
   let ctx = canvas.getContext("2d");
-
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
@@ -974,13 +964,46 @@ function playWinAnimation() {
     particles = particles.filter(p => p.life > 0);
 
     if (particles.length > 0) {
-      requestAnimationFrame(animate);
+      winAnimationFrame = requestAnimationFrame(animate);
     } else {
       canvas.remove();
+      winAnimationFrame = null;
     }
   }
 
-  animate();
+  winAnimationFrame = requestAnimationFrame(animate);
+}
+
+/* ================================
+WIN
+================================ */
+function checkWin() {
+  // must fill all cells
+  if (path.length !== size * size) return;
+
+  // must reach last number
+  const maxNumber = getMaxNumber(gridData);
+  if (currentNumber !== maxNumber + 1) return;
+
+  // prevent multiple triggers
+  if (gameOver) return;
+
+  gameOver = true;
+  clearInterval(interval);
+
+  gamesPlayed++;
+  zipNumber++;
+
+  playWinAnimation();
+
+  setTimeout(() => {
+    alert("🎉 Completed! Time: " +
+      (timer < 60
+        ? timer + "s"
+        : Math.floor(timer / 60) + ":" + (timer % 60).toString().padStart(2, '0'))
+    );
+    loadNextPuzzle();
+  }, 500);
 }
 
 /* ================================
