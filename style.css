@@ -16,6 +16,7 @@ overflow: hidden;
 /* ===== CONTAINER ===== */
 .container {
   background: rgba(255,255,255,0.05);
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   padding: 14px; /* 🔥 reduced */
   border-radius: 18px;
@@ -62,6 +63,7 @@ cursor: pointer;
 transition: 0.3s;
 
 /* 🔥 ADDED */
+-webkit-backdrop-filter: blur(6px);
 backdrop-filter: blur(6px);
 }
 
@@ -130,6 +132,7 @@ transition: 0.2s;
 padding: 2px;
 
 /* 🔥 ADDED */
+-webkit-backdrop-filter: blur(4px);
 backdrop-filter: blur(4px);
 }
 
@@ -187,6 +190,7 @@ cursor: pointer;
 transition: 0.3s;
 
 /* 🔥 ADDED */
+-webkit-backdrop-filter: blur(6px);
 backdrop-filter: blur(6px);
 }
 
@@ -210,6 +214,7 @@ cursor: pointer;
 transition: 0.3s;
 
 /* 🔥 ADDED */
+-webkit-backdrop-filter: blur(6px);
 backdrop-filter: blur(6px);
 }
 
@@ -373,6 +378,18 @@ WIN PARTICLE EFFECT
   margin-top: 12px;
   font-size: 12px;
   opacity: 0.7;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: var(--gold-light);
 }
 
 .footer span {
